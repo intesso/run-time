@@ -115,8 +115,8 @@ function getPaths() {
   var upstartRuntimePath = runtimePath + 'upstart.conf';
   var nginxRuntimePath = runtimePath + 'nginx.conf';
 
-  var upstartTemplatePath = pwd + '/templates/upstart.conf';
-  var nginxTemplatePath = pwd + '/templates/nginx.conf';
+  var upstartTemplatePath = __dirname + '/templates/upstart.conf';
+  var nginxTemplatePath = __dirname + '/templates/nginx.conf';
 
   var upstartTemplate = fs.readFileSync(upstartTemplatePath, 'utf-8');
   var nginxTemplate = fs.readFileSync(nginxTemplatePath, 'utf-8');
