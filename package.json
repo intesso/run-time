@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "version": "cp index-init.js runtime-init.js"
+    "version": "echo \"Mààààà\""
   },
   "repository": {
     "type": "git",
