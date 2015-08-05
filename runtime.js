@@ -19,43 +19,43 @@ var debug = require('debug')('run-time:debug');
  */
 
 exports.init = function(opts) {
-  opts = setOptions(opts);
+  opts = getOptions(opts);
   debug('init options', opts);
 
   try {
-    var p = getPaths();
-    shell.mkdir('-p', p.runtimePath);
+    shell.mkdir('-p', opts.runtimePath);
 
-    var upstart = ejs.render(p.upstartTemplate, opts);
-    var nginx = ejs.render(p.nginxTemplate, opts);
+    var upstart = ejs.render(opts.upstartTemplate, opts);
+    var nginx = ejs.render(opts.nginxTemplate, opts);
 
-    fs.writeFileSync(p.upstartRuntimePath, upstart);
-    fs.writeFileSync(p.nginxRuntimePath, nginx);
+    fs.writeFileSync(opts.upstartRuntimePath, upstart);
+    fs.writeFileSync(opts.nginxRuntimePath, nginx);
+    fs.writeFileSync(opts.configurationRuntimePath, JSON.stringify(opts, null, 2));
 
-    console.log('Generated upstart configuration:', p.upstartRuntimePath);
-    console.log('Generated   nginx configuration:', p.nginxRuntimePath);
+    console.log('Generated upstart configuration:', opts.upstartRuntimePath);
+    console.log('Generated   nginx configuration:', opts.nginxRuntimePath);
+    console.log('Stored            configuration:', opts.configurationRuntimePath);
 
     debug('upstart configuration', upstart);
     debug('nginx   configuration', nginx);
   } catch (err) {
-    console.error('Generating configuration files FAILED:', err);
+    console.error('Generating configuration files FAILED:', err, err.stack.split('\n'));
   }
 
 
 };
 
 exports.add = function(opts) {
-  opts = setOptions(opts);
+  opts = getOptions(opts);
   debug('add options', opts);
 
   try {
-    var p = getPaths();
     // add (copy) host config files
-    shell.cp(p.upstartTemplatePath, p.upstartDestPath + opts.appName + '.conf');
-    shell.cp(p.nginxTemplatePath, p.nginxDestPath + opts.appName + '.conf');
+    shell.cp(opts.upstartTemplatePath, opts.upstartDestPath + opts.appName + '.conf');
+    shell.cp(opts.nginxTemplatePath, opts.nginxDestPath + opts.appName + '.conf');
 
-    console.log('Copied upstart configuration from:', p.upstartTemplatePath, 'to:', p.upstartDestPath + opts.appName + '.conf');
-    console.log('Copied   nginx configuration from:', p.nginxTemplatePath, 'to:', p.nginxDestPath + opts.appName + '.conf');
+    console.log('Copied upstart configuration from:', opts.upstartTemplatePath, 'to:', opts.upstartDestPath + opts.appName + '.conf');
+    console.log('Copied   nginx configuration from:', opts.nginxTemplatePath, 'to:', opts.nginxDestPath + opts.appName + '.conf');
 
     // reload nginx and start the service
     exec('/usr/sbin/nginx', ['-s', 'reload']);
@@ -64,34 +64,33 @@ exports.add = function(opts) {
     console.log('Sucessfully added the new configuration');
 
   } catch (err) {
-    console.error('Adding/Starting the configuration FAILED:', err);
+    console.error('Adding/Starting the configuration FAILED:', err, err.stack.split('\n'));
   }
 
 };
 
 exports.remove = function(opts) {
-  opts = setOptions(opts);
+  opts = getOptions(opts);
   debug('remove options', opts);
   var p;
 
   // stop the app first
   try {
-    p = getPaths();
     exec('stop', [opts.appName]); // /sbin/stop
     console.log('Sucessfully stopped:', opts.appName);
   } catch (err) {
-    console.error('Stopping', opts.appName, 'FAILED:', err);
+    console.error('Stopping', opts.appName, 'FAILED:', err, err.stack.split('\n'));
   }
 
   try {
     // remove the config files from the host paths
-    shell.rm(p.upstartDestPath + opts.appName + '.conf');
-    shell.rm(p.nginxDestPath + opts.appName + '.conf');
+    shell.rm(opts.upstartDestPath + opts.appName + '.conf');
+    shell.rm(opts.nginxDestPath + opts.appName + '.conf');
     // reload nginx configuration after removing the configuration for the app
     exec('/usr/sbin/nginx', ['-s', 'reload']);
     console.log('Sucessfully removed the configuration files and reloaded nginx.');
   } catch (err) {
-    console.error('Reloading nginx FAILED:', err);
+    console.error('Reloading nginx FAILED:', err, err.stack.split('\n'));
   }
 
 };
@@ -99,11 +98,30 @@ exports.remove = function(opts) {
 /*
  * private helper functions
  */
-function setOptions(opts) {
-  opts = opts || {};
-  opts.application = getAbsolutePath(opts.exec);
+function getOptions(opts) {
 
-  return defaults(opts, settings);
+  opts = opts || {};
+  if(opts.exec) opts.application = getAbsolutePath(opts.exec);
+
+
+  // merge paths
+  opts = defaults(opts, getPaths());
+
+  try {
+    var storedConfigJson =  fs.readFileSync(opts.configurationRuntimePath, 'utf-8');
+    var storedConfig = JSON.parse(storedConfigJson);
+    // merge storedConfig
+    opts = defaults(opts, storedConfig);
+    debug('Loaded previously stored configuration.json', storedConfig);
+  } catch (err) {
+    // it's ok, if nothing was stored proviously.
+  }
+
+  // merge default settings
+  opts.configuration = opts.configuration || "'" + process.argv.join("' '") + "'";
+  opts = defaults(opts, settings);
+  return opts;
+
 }
 
 function getPaths() {
@@ -114,6 +132,7 @@ function getPaths() {
 
   var upstartRuntimePath = runtimePath + 'upstart.conf';
   var nginxRuntimePath = runtimePath + 'nginx.conf';
+  var configurationRuntimePath = runtimePath + 'configuration.json';
 
   var upstartTemplatePath = __dirname + '/templates/upstart.conf';
   var nginxTemplatePath = __dirname + '/templates/nginx.conf';
@@ -129,6 +148,7 @@ function getPaths() {
 
     upstartRuntimePath: upstartRuntimePath,
     nginxRuntimePath: nginxRuntimePath,
+    configurationRuntimePath: configurationRuntimePath,
 
     upstartTemplatePath: upstartTemplatePath,
     nginxTemplatePath: nginxTemplatePath,

@@ -4,7 +4,7 @@ var runtime = require('./runtime');
 var defaultOptions = require('./settings');
 var program = require('commander');
 var minimist = require('minimist');
-var merge = require('utils-merge');
+var defaults = require('defaults');
 
 function toOption(option, options){
   option = option.replace(/\[/, '');
@@ -14,7 +14,7 @@ function toOption(option, options){
 
   option = option.split(' ');
   var opts = minimist(option);
-  merge(options, opts);
+  defaults(options, opts);
 
   return options;
 }
