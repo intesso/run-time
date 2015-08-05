@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postversion": "cp index-init.js runtime-init.js; cp index-add.js runtime-add.js; cp index-remove.js runtime-remove.js"
+    "postversion": "cp index-init.js runtime-init.js"
   },
   "repository": {
     "type": "git",
