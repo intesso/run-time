@@ -51,11 +51,11 @@ exports.add = function(opts) {
 
   try {
     // add (copy) host config files
-    shell.cp(opts.upstartTemplatePath, opts.upstartDestPath + opts.appName + '.conf');
-    shell.cp(opts.nginxTemplatePath, opts.nginxDestPath + opts.appName + '.conf');
+    shell.cp(opts.upstartRuntimePath, opts.upstartDestPath + opts.appName + '.conf');
+    shell.cp(opts.nginxRuntimePath, opts.nginxDestPath + opts.appName + '.conf');
 
-    console.log('Copied upstart configuration from:', opts.upstartTemplatePath, 'to:', opts.upstartDestPath + opts.appName + '.conf');
-    console.log('Copied   nginx configuration from:', opts.nginxTemplatePath, 'to:', opts.nginxDestPath + opts.appName + '.conf');
+    console.log('Copied upstart configuration from:', opts.upstartRuntimePath, 'to:', opts.upstartDestPath + opts.appName + '.conf');
+    console.log('Copied   nginx configuration from:', opts.nginxRuntimePath, 'to:', opts.nginxDestPath + opts.appName + '.conf');
 
     // reload nginx and start the service
     exec('/usr/sbin/nginx', ['-s', 'reload']);
