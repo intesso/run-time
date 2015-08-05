@@ -51,8 +51,8 @@ exports.add = function(opts) {
 
   try {
     // add (copy) host config files
-    shell.cp(opts.upstartRuntimePath, opts.upstartDestPath + opts.appName + '.conf');
-    shell.cp(opts.nginxRuntimePath, opts.nginxDestPath + opts.appName + '.conf');
+    shell.cp('-f', opts.upstartRuntimePath, opts.upstartDestPath + opts.appName + '.conf');
+    shell.cp('-f', opts.nginxRuntimePath, opts.nginxDestPath + opts.appName + '.conf');
 
     console.log('Copied upstart configuration from:', opts.upstartRuntimePath, 'to:', opts.upstartDestPath + opts.appName + '.conf');
     console.log('Copied   nginx configuration from:', opts.nginxRuntimePath, 'to:', opts.nginxDestPath + opts.appName + '.conf');
@@ -102,7 +102,7 @@ function getOptions(opts) {
 
   opts = opts || {};
   if(opts.exec) opts.application = getAbsolutePath(opts.exec);
-
+  opts.configuration = "'" + process.argv.join("' '") + "'";
 
   // merge paths
   opts = defaults(opts, getPaths());
@@ -119,7 +119,6 @@ function getOptions(opts) {
 
   // merge default settings
   opts.application = opts.application || getAbsolutePath(opts.exec);
-  opts.configuration = opts.configuration || "'" + process.argv.join("' '") + "'";
   opts = defaults(opts, settings);
   return opts;
 
