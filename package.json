@@ -1,0 +1,40 @@
+{
+  "name": "run-time",
+  "version": "1.0.0",
+  "description": "generate runtime configuration for node.js apps.",
+  "main": "index.js",
+  "bin": {
+    "runtime": "./index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/intesso/run-time.git"
+  },
+  "keywords": [
+    "production",
+    "server",
+    "runtime",
+    "nginx",
+    "upstart",
+    "forever"
+  ],
+  "author": "Andi Neck",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/intesso/run-time/issues"
+  },
+  "homepage": "https://github.com/intesso/run-time",
+  "dependencies": {
+    "commander": "^2.8.1",
+    "debug": "^2.2.0",
+    "defaults": "^1.0.2",
+    "ejs": "^2.3.3",
+    "minimist": "^1.1.2",
+    "path-is-absolute": "^1.0.0",
+    "shelljs": "^0.5.1",
+    "utils-merge": "^1.0.0"
+  }
+}
