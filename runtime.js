@@ -14,21 +14,6 @@ var ejs = require('ejs');
 var pathIsAbsolute = require('path-is-absolute');
 var debug = require('debug')('run-time:debug');
 
-var runtimePath = __dirname + '/.runtime/';
-
-var upstartRuntimePath = runtimePath + 'upstart.conf';
-var nginxRuntimePath = runtimePath + 'nginx.conf';
-
-var upstartTemplatePath = __dirname + '/templates/upstart.conf';
-var nginxTemplatePath = __dirname + '/templates/nginx.conf';
-
-var upstartTemplate = fs.readFileSync(upstartTemplatePath, 'utf-8');
-var nginxTemplate = fs.readFileSync(nginxTemplatePath, 'utf-8');
-
-var upstartDestPath = '/etc/init/';
-var nginxDestPath = '/etc/nginx/conf.d/';
-
-
 /*
  * api functions
  */
@@ -37,17 +22,18 @@ exports.init = function(opts) {
   opts = setOptions(opts);
   debug('init options', opts);
 
-  try{
-    shell.mkdir('-p', runtimePath);
+  try {
+    var p = getPaths();
+    shell.mkdir('-p', p.runtimePath);
 
-    var upstart = ejs.render(upstartTemplate, opts);
-    var nginx = ejs.render(nginxTemplate, opts);
+    var upstart = ejs.render(p.upstartTemplate, opts);
+    var nginx = ejs.render(p.nginxTemplate, opts);
 
-    fs.writeFileSync(upstartRuntimePath, upstart);
-    fs.writeFileSync(nginxRuntimePath, nginx);
+    fs.writeFileSync(p.upstartRuntimePath, upstart);
+    fs.writeFileSync(p.nginxRuntimePath, nginx);
 
-    console.log('Generated upstart configuration:', upstartRuntimePath);
-    console.log('Generated   nginx configuration:', nginxRuntimePath);
+    console.log('Generated upstart configuration:', p.upstartRuntimePath);
+    console.log('Generated   nginx configuration:', p.nginxRuntimePath);
 
     debug('upstart configuration', upstart);
     debug('nginx   configuration', nginx);
@@ -62,15 +48,14 @@ exports.add = function(opts) {
   opts = setOptions(opts);
   debug('add options', opts);
 
-
-
   try {
+    var p = getPaths();
     // add (copy) host config files
-    shell.cp(upstartTemplatePath, upstartDestPath + opts.appName + '.conf');
-    shell.cp(nginxTemplatePath, nginxDestPath + opts.appName + '.conf');
+    shell.cp(p.upstartTemplatePath, p.upstartDestPath + opts.appName + '.conf');
+    shell.cp(p.nginxTemplatePath, p.nginxDestPath + opts.appName + '.conf');
 
-    console.log('Copied upstart configuration from:', upstartTemplatePath, 'to:', upstartDestPath + opts.appName + '.conf');
-    console.log('Copied   nginx configuration from:', nginxTemplatePath, 'to:', nginxDestPath + opts.appName + '.conf');
+    console.log('Copied upstart configuration from:', p.upstartTemplatePath, 'to:', p.upstartDestPath + opts.appName + '.conf');
+    console.log('Copied   nginx configuration from:', p.nginxTemplatePath, 'to:', p.nginxDestPath + opts.appName + '.conf');
 
     // reload nginx and start the service
     exec('/usr/sbin/nginx', ['-s', 'reload']);
@@ -87,9 +72,11 @@ exports.add = function(opts) {
 exports.remove = function(opts) {
   opts = setOptions(opts);
   debug('remove options', opts);
+  var p;
 
   // stop the app first
   try {
+    p = getPaths();
     exec('stop', [opts.appName]); // /sbin/stop
     console.log('Sucessfully stopped:', opts.appName);
   } catch (err) {
@@ -98,8 +85,8 @@ exports.remove = function(opts) {
 
   try {
     // remove the config files from the host paths
-    shell.rm(upstartDestPath + opts.appName + '.conf');
-    shell.rm(nginxDestPath + opts.appName + '.conf');
+    shell.rm(p.upstartDestPath + opts.appName + '.conf');
+    shell.rm(p.nginxDestPath + opts.appName + '.conf');
     // reload nginx configuration after removing the configuration for the app
     exec('/usr/sbin/nginx', ['-s', 'reload']);
     console.log('Sucessfully removed the configuration files and reloaded nginx.');
@@ -117,6 +104,42 @@ function setOptions(opts) {
   opts.application = getAbsolutePath(opts.exec);
 
   return defaults(opts, settings);
+}
+
+function getPaths() {
+
+  var pwd = process.cwd();
+
+  var runtimePath = pwd + '/.runtime/';
+
+  var upstartRuntimePath = runtimePath + 'upstart.conf';
+  var nginxRuntimePath = runtimePath + 'nginx.conf';
+
+  var upstartTemplatePath = pwd + '/templates/upstart.conf';
+  var nginxTemplatePath = pwd + '/templates/nginx.conf';
+
+  var upstartTemplate = fs.readFileSync(upstartTemplatePath, 'utf-8');
+  var nginxTemplate = fs.readFileSync(nginxTemplatePath, 'utf-8');
+
+  var upstartDestPath = '/etc/init/';
+  var nginxDestPath = '/etc/nginx/conf.d/';
+
+  return {
+    runtimePath: runtimePath,
+
+    upstartRuntimePath: upstartRuntimePath,
+    nginxRuntimePath: nginxRuntimePath,
+
+    upstartTemplatePath: upstartTemplatePath,
+    nginxTemplatePath: nginxTemplatePath,
+
+    upstartTemplate: upstartTemplate,
+    nginxTemplate: nginxTemplate,
+
+    upstartDestPath: upstartDestPath,
+    nginxDestPath: nginxDestPath
+  };
+
 }
 
 
