@@ -1,6 +1,6 @@
 {
   "name": "run-time",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "generate runtime configuration for node.js apps.",
   "main": "index.js",
   "bin": {
