@@ -118,6 +118,7 @@ function getOptions(opts) {
   }
 
   // merge default settings
+  opts.application = opts.application || getAbsolutePath(opts.exec);
   opts.configuration = opts.configuration || "'" + process.argv.join("' '") + "'";
   opts = defaults(opts, settings);
   return opts;
