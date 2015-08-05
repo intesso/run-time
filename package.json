@@ -1,6 +1,6 @@
 {
   "name": "run-time",
-  "version": "1.0.10",
+  "version": "1.0.3",
   "description": "generate runtime configuration for node.js apps.",
   "main": "index.js",
   "bin": {
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "version": "echo \"Mààààà\" && exit 1"
+    "prepublish": "cp index-init.js runtime-init.js && cp index-add.js runtime-add.js && cp index-remove.js runtime-remove.js"
   },
   "repository": {
     "type": "git",
