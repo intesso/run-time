@@ -37,13 +37,13 @@ exports.init = function(opts) {
     console.log('Generated upstart configuration:', opts.upstartRuntimePath);
     console.log('Generated   nginx configuration:', opts.nginxRuntimePath);
     console.log('Stored            configuration:', opts.configurationRuntimePath);
+    console.log('To rerun the      configuration: run `', opts.configurationRerunPath, '`');
 
     debug('upstart configuration', upstart);
     debug('nginx   configuration', nginx);
   } catch (err) {
     console.error('Generating configuration files FAILED:', err, err.stack.split('\n'));
   }
-
 
 };
 
@@ -60,13 +60,14 @@ exports.add = function(opts) {
     console.log('Copied   nginx configuration from:', opts.nginxRuntimePath, 'to:', opts.nginxDestPath + opts.appName + '.conf');
 
     // reload nginx and start the service
+    console.log('Reloading the nginx configuration...');
     exec('/usr/sbin/nginx', ['-s', 'reload']);
+    console.log('Starting the application', opts.appName, '...');
     exec('start', [opts.appName]); // /sbin/start
-
-    console.log('Sucessfully added the new configuration');
+    console.log('Sucessfully added and started the new configuration:', opts.appName, '...');
 
   } catch (err) {
-    console.error('Adding/Starting the configuration FAILED:', err, err.stack.split('\n'));
+    console.error('Adding/Starting the configuration:', opts.appName, 'FAILED:', err, err.stack.split('\n'));
   }
 
 };
@@ -78,6 +79,7 @@ exports.remove = function(opts) {
 
   // stop the app first
   try {
+    console.log('Stopping the application', opts.appName, '...');
     exec('stop', [opts.appName]); // /sbin/stop
     console.log('Sucessfully stopped:', opts.appName);
   } catch (err) {
@@ -86,11 +88,18 @@ exports.remove = function(opts) {
 
   try {
     // remove the config files from the host paths
-    shell.rm(opts.upstartDestPath + opts.appName + '.conf');
-    shell.rm(opts.nginxDestPath + opts.appName + '.conf');
+
+    var upstartDest = opts.upstartDestPath + opts.appName + '.conf';
+    var nginxDest = opts.nginxDestPath + opts.appName + '.conf';
+    console.log('Removing', upstartDest, '...');
+    shell.rm(upstartDest);
+    console.log('Removing', nginxDest, '...');
+    shell.rm(nginxDest);
+    console.log('Successfully removed the config files');
     // reload nginx configuration after removing the configuration for the app
+    console.log('Reloading the nginx configuration...');
     exec('/usr/sbin/nginx', ['-s', 'reload']);
-    console.log('Sucessfully removed the configuration files and reloaded nginx.');
+    console.log('Sucessfully reloaded nginx.');
   } catch (err) {
     console.error('Reloading nginx FAILED:', err, err.stack.split('\n'));
   }
@@ -103,14 +112,14 @@ exports.remove = function(opts) {
 function getOptions(opts) {
 
   opts = opts || {};
-  if(opts.exec) opts.application = getAbsolutePath(opts.exec);
+  if (opts.exec) opts.application = getAbsolutePath(opts.exec);
   opts.configuration = "'" + process.argv.join("' '") + "'";
 
   // merge paths
   opts = defaults(opts, getPaths());
 
   try {
-    var storedConfigJson =  fs.readFileSync(opts.configurationRuntimePath, 'utf-8');
+    var storedConfigJson = fs.readFileSync(opts.configurationRuntimePath, 'utf-8');
     var storedConfig = JSON.parse(storedConfigJson);
     // merge storedConfig
     opts = defaults(opts, storedConfig);
@@ -147,6 +156,9 @@ function getPaths() {
   var nginxDestPath = '/etc/nginx/conf.d/';
 
   return {
+
+    pwd: pwd,
+
     runtimePath: runtimePath,
 
     upstartRuntimePath: upstartRuntimePath,
@@ -165,7 +177,6 @@ function getPaths() {
   };
 
 }
-
 
 function getAbsolutePath(p) {
   var dir = process.cwd() + '/';
