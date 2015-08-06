@@ -43,7 +43,7 @@ if needed, you can modify the files manually, before running `runtime add`.
 runtime init -n mynodeapp -d "mynodeapp.com www.mynodeapp.com" -p 3007 -x app.js
 
 # another node example
-runtime init -c node -x app.js -o "[ --myappPort 8080 --myappHost localhost ]" -p 8080 -n myapp -d "myapp.com www.myapp.com" -e DEBUG=* -e NODE_ENV=production
+runtime init -c node -n myapp -d "myapp.com www.myapp.com" -o "[ --myappPort 8080 --myappHost localhost ]" -p 8080  -e DEBUG=* -e NODE_ENV=production -x app.js
 
 # http-server example
 runtime init -n mycms -d "mycms.com www.mycms.com" -p 3008 -c http-server -o "[-i -p 3008]"
@@ -60,14 +60,22 @@ runtime add
 
 ### remove
 
-if you wan't to remove your app, you can do it of course.
-
+if you wan't to remove your app, you can do it of course with this command.
 
 ```bash
 runtime remove
 # or with specific appName
 runtime remove -n myapp
 ```
+
+### list
+
+prints out all the active configurations (added with runtime).
+
+```bash
+runtime list
+```
+
 
 ## license
 MIT

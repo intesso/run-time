@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublish": "cp index-init.js runtime-init.js && cp index-add.js runtime-add.js && cp index-remove.js runtime-remove.js"
+    "prepublish": "cp index-init.js runtime-init.js && cp index-add.js runtime-add.js && cp index-remove.js runtime-remove.js && cp index-list.js runtime-list.js"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/intesso/run-time",
   "dependencies": {
+    "cli-table": "^0.3.1",
     "commander": "^2.8.1",
     "debug": "^2.2.0",
     "defaults": "^1.0.2",

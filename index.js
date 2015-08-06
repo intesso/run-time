@@ -10,7 +10,8 @@ if (!module.parent) {
     .version(version)
     .command('init', 'initialize configuration files for this web application', {isDefault: true})
     .command('add', 'add the new configuration to the host')
-    .command('remove', 'remove the configuration from the host');
+    .command('remove', 'remove the configuration from the host')
+    .command('list', 'list the active configurations');
 
   program
     .parse(process.argv);

@@ -11,6 +11,7 @@ var settings = require('./settings');
 var fs = require('fs');
 var path = require('path');
 var ejs = require('ejs');
+var Table = require('cli-table');
 var pathIsAbsolute = require('path-is-absolute');
 var debug = require('debug')('run-time:debug');
 
@@ -66,6 +67,10 @@ exports.add = function(opts) {
     exec('start', [opts.appName]); // /sbin/start
     console.log('Sucessfully added and started the new configuration:', opts.appName, '...');
 
+    // update list
+    var list = readList(opts.listPath);
+    list[opts.appName] = opts.configuration;
+    storeList(opts.listPath, list);
   } catch (err) {
     console.error('Adding/Starting the configuration:', opts.appName, 'FAILED:', err, err.stack.split('\n'));
   }
@@ -100,10 +105,27 @@ exports.remove = function(opts) {
     console.log('Reloading the nginx configuration...');
     exec('/usr/sbin/nginx', ['-s', 'reload']);
     console.log('Sucessfully reloaded nginx.');
+
+    // update list
+    var list = readList(opts.listPath);
+    delete list[opts.appName];
+    storeList(opts.listPath, list);
   } catch (err) {
     console.error('Reloading nginx FAILED:', err, err.stack.split('\n'));
   }
 
+};
+
+exports.list = function(opts) {
+  opts = getOptions(opts);
+
+  try {
+    var list = readList(opts.listPath);
+    printList(list);
+  } catch (err) {
+    debug('list error', err);
+    console.log('nothing to show, sooory!');
+  }
 };
 
 /*
@@ -146,6 +168,8 @@ function getPaths() {
   var configurationRuntimePath = runtimePath + 'configuration.json';
   var configurationRerunPath = runtimePath + 'rerun.sh';
 
+  var listPath = __dirname + '/list.json';
+
   var upstartTemplatePath = __dirname + '/templates/upstart.conf';
   var nginxTemplatePath = __dirname + '/templates/nginx.conf';
 
@@ -158,6 +182,8 @@ function getPaths() {
   return {
 
     pwd: pwd,
+
+    listPath: listPath,
 
     runtimePath: runtimePath,
 
@@ -183,6 +209,41 @@ function getAbsolutePath(p) {
   if (!p) return dir;
   if (pathIsAbsolute(p)) return p;
   return process.cwd() + '/' + p;
+}
+
+function readList(location) {
+  try {
+    var listJson = fs.readFileSync(location, 'utf-8');
+    return JSON.parse(listJson);
+  } catch (err) {
+    debug('Reading List failed', location, err);
+    return {};
+  }
+}
+
+function storeList(location, list) {
+  try {
+    fs.writeFileSync(dest, JSON.stringify(location, null, 2));
+  } catch (err) {
+    debug('Storing List failed', location, err);
+  }
+}
+
+function printList(list) {
+  var Table = require('cli-table');
+
+  // instantiate cli-table
+  var table = new Table({
+    head: ['app-name', 'configuration']
+  });
+
+  // push rows to the table
+  Object.keys(list).forEach(function(key) {
+    var value = list[key];
+    table.push([key, value])
+  });
+
+  console.log(table.toString());
 }
 
 
