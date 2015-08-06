@@ -65,7 +65,7 @@ exports.add = function(opts) {
     exec('/usr/sbin/nginx', ['-s', 'reload']);
     console.log('Starting the application', opts.appName, '...');
     exec('start', [opts.appName]); // /sbin/start
-    console.log('Sucessfully added and started the new configuration:', opts.appName, '...');
+    console.log('Sucessfully added and started the new configuration:', opts.appName);
 
     // update list
     var list = readList(opts.listPath);
@@ -223,7 +223,7 @@ function readList(location) {
 
 function storeList(location, list) {
   try {
-    fs.writeFileSync(dest, JSON.stringify(location, null, 2));
+    fs.writeFileSync(location, JSON.stringify(list, null, 2));
   } catch (err) {
     debug('Storing List failed', location, err);
   }
