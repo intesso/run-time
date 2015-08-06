@@ -20,7 +20,7 @@ var debug = require('debug')('run-time:debug');
  */
 
 exports.init = function(opts) {
-  opts = getOptions(opts);
+  opts = getOptions(opts, false);
   opts.initConfituration = opts.configuration;
   debug('init options', opts);
 
@@ -50,7 +50,7 @@ exports.init = function(opts) {
 };
 
 exports.add = function(opts) {
-  opts = getOptions(opts);
+  opts = getOptions(opts, true);
   debug('add options', opts);
 
   try {
@@ -79,7 +79,7 @@ exports.add = function(opts) {
 };
 
 exports.remove = function(opts) {
-  opts = getOptions(opts);
+  opts = getOptions(opts, true);
   debug('remove options', opts);
   var p;
 
@@ -118,7 +118,7 @@ exports.remove = function(opts) {
 };
 
 exports.list = function(opts) {
-  opts = getOptions(opts);
+  opts = getOptions(opts, false);
 
   try {
     var list = readList(opts.listPath);
@@ -132,7 +132,7 @@ exports.list = function(opts) {
 /*
  * private helper functions
  */
-function getOptions(opts) {
+function getOptions(opts, readStored) {
 
   opts = opts || {};
   if (opts.exec) opts.application = getAbsolutePath(opts.exec);
@@ -141,14 +141,17 @@ function getOptions(opts) {
   // merge paths
   opts = defaults(opts, getPaths());
 
-  try {
-    var storedConfigJson = fs.readFileSync(opts.configurationRuntimePath, 'utf-8');
-    var storedConfig = JSON.parse(storedConfigJson);
-    // merge storedConfig
-    opts = defaults(opts, storedConfig);
-    debug('Loaded previously stored configuration.json', storedConfig);
-  } catch (err) {
-    // it's ok, if nothing was stored proviously.
+  // read previously stored configuration
+  if (readStored) {
+    try {
+      var storedConfigJson = fs.readFileSync(opts.configurationRuntimePath, 'utf-8');
+      var storedConfig = JSON.parse(storedConfigJson);
+      // merge storedConfig
+      opts = defaults(opts, storedConfig);
+      debug('Loaded previously stored configuration.json', storedConfig);
+    } catch (err) {
+      // it's ok, if nothing was stored proviously.
+    }
   }
 
   // merge default settings
@@ -245,6 +248,7 @@ function printList(list) {
   });
 
   console.log(table.toString());
+
 }
 
 
