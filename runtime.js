@@ -31,6 +31,8 @@ exports.init = function(opts) {
     fs.writeFileSync(opts.upstartRuntimePath, upstart);
     fs.writeFileSync(opts.nginxRuntimePath, nginx);
     fs.writeFileSync(opts.configurationRuntimePath, JSON.stringify(opts, null, 2));
+    fs.writeFileSync(opts.configurationRerunPath, opts.configuration);
+    shell.chmod('+x', opts.configurationRerunPath);
 
     console.log('Generated upstart configuration:', opts.upstartRuntimePath);
     console.log('Generated   nginx configuration:', opts.nginxRuntimePath);
@@ -133,6 +135,7 @@ function getPaths() {
   var upstartRuntimePath = runtimePath + 'upstart.conf';
   var nginxRuntimePath = runtimePath + 'nginx.conf';
   var configurationRuntimePath = runtimePath + 'configuration.json';
+  var configurationRerunPath = runtimePath + 'rerun.sh';
 
   var upstartTemplatePath = __dirname + '/templates/upstart.conf';
   var nginxTemplatePath = __dirname + '/templates/nginx.conf';
@@ -149,6 +152,7 @@ function getPaths() {
     upstartRuntimePath: upstartRuntimePath,
     nginxRuntimePath: nginxRuntimePath,
     configurationRuntimePath: configurationRuntimePath,
+    configurationRerunPath: configurationRerunPath,
 
     upstartTemplatePath: upstartTemplatePath,
     nginxTemplatePath: nginxTemplatePath,
