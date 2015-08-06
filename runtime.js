@@ -21,6 +21,7 @@ var debug = require('debug')('run-time:debug');
 
 exports.init = function(opts) {
   opts = getOptions(opts);
+  opts.initConfituration = opts.configuration;
   debug('init options', opts);
 
   try {
@@ -69,7 +70,7 @@ exports.add = function(opts) {
 
     // update list
     var list = readList(opts.listPath);
-    list[opts.appName] = opts.configuration;
+    list[opts.appName] = opts.initConfituration;
     storeList(opts.listPath, list);
   } catch (err) {
     console.error('Adding/Starting the configuration:', opts.appName, 'FAILED:', err, err.stack.split('\n'));
