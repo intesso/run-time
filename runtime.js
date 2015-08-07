@@ -172,7 +172,8 @@ function getPaths() {
   var configurationRuntimePath = runtimePath + 'configuration.json';
   var configurationRerunPath = runtimePath + 'rerun.sh';
 
-  var listPath = __dirname + '/list.json';
+  var listDir = '/etc/runtime/';
+  var listPath = listDir + 'list.json';
 
   var upstartTemplatePath = __dirname + '/templates/upstart.conf';
   var nginxTemplatePath = __dirname + '/templates/nginx.conf';
@@ -187,6 +188,7 @@ function getPaths() {
 
     pwd: pwd,
 
+    listDir: listDir,
     listPath: listPath,
 
     runtimePath: runtimePath,
@@ -226,7 +228,10 @@ function readList(location) {
 }
 
 function storeList(location, list) {
+
   try {
+    var dir = path.parse(location).dir;
+    shell.mkdir('-p', dir);
     fs.writeFileSync(location, JSON.stringify(list, null, 2));
   } catch (err) {
     debug('Storing List failed', location, err);
