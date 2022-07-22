@@ -33,9 +33,9 @@
     "commander": "^2.8.1",
     "debug": "^2.2.0",
     "defaults": "^1.0.2",
-    "ejs": "^2.3.3",
+    "ejs": "^3.1.8",
     "minimist": "^1.1.2",
     "path-is-absolute": "^1.0.0",
-    "shelljs": "^0.5.1"
+    "shelljs": "^0.8.5"
   }
 }
